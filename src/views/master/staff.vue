@@ -85,6 +85,7 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useUserStore } from '@/stores/user'
+import { ElMessage, ElMessageBox } from 'element-plus'
 const userStore = useUserStore()
 const excuteSearch = ref(false)
 interface ShopItem {
@@ -155,7 +156,7 @@ const searchData = () => {
     tableData.value = filterData
     excuteSearch.value = true;
 }
-if (['SHOP_USER', 'SUB_SHOP_USER'].includes(userStore.userInfo.role)) {
+if (['SHOP_USER', 'SUB_SHOP_USER', 'GROUP_USER'].includes(userStore.userInfo.role)) {
     search.shopCode = userStore.userInfo.storeCd
     searchData()
 }
@@ -200,10 +201,25 @@ const handleEdit = () => {
 }
 
 const handleSaveAll = () => {
-    tableData.value.forEach(item => item.isNew = false)
-    originBackup.value = JSON.parse(JSON.stringify(tableData.value))
-    isEditMode.value = false
-    alert('保存完了')
+    // 確認ダイアログ表示
+    ElMessageBox.confirm(
+        '変更・新規した従業員を登録します。よろしいですか？',
+        '確認',
+        {
+            confirmButtonText: '確認',
+            cancelButtonText: 'キャンセル',
+            type: 'info'
+        }
+    ).then(() => {
+        tableData.value.forEach(item => item.isNew = false)
+        originBackup.value = JSON.parse(JSON.stringify(tableData.value))
+        isEditMode.value = false
+        ElMessage.success('登録しました')
+    }).catch(() => {
+        // キャンセル押下：何もしない
+        ElMessage.info('登録をキャンセルしました')
+    })
+
 }
 </script>
 

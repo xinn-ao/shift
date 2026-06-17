@@ -16,14 +16,13 @@
                         <el-button type="primary" @click="handleSearch" :disabled="!search.shopCode">検索</el-button>
                     </el-form-item>
                 </el-form>
-                <!-- 右側：組織インポート 一番右端 -->
-                <el-button type="success" @click="handleImportOrg">組織インポート</el-button>
             </div>
 
             <!-- 2行目：変更・保存 右寄せ -->
             <div class="btn-group">
                 <el-button type="primary" :disabled="!tableData.length || editFlag" @click="handleEdit">変更</el-button>
                 <el-button type="success" :disabled="!editFlag" @click="handleSave">保存</el-button>
+                <el-button type="success" @click="handleImportOrg">組織インポート</el-button>
             </div>
         </el-card>
 

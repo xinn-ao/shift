@@ -33,8 +33,11 @@
                   {{ singleShop.name }} {{ currentYM }}
                 </th>
                 <template v-for="(item, idx) in dayList" :key="item.date">
-                  <th v-if="idx === 0 || dayList[idx - 1]?.showYM !== item.showYM" :colspan="getColSpan(idx)"
-                    class="title-th">
+                  <th
+                    v-if="idx === 0 || dayList[idx - 1]?.showYM !== item.showYM"
+                    :colspan="getColSpan(idx)"
+                    class="title-th"
+                  >
                     {{ item.showYM }}
                   </th>
                 </template>
@@ -46,8 +49,12 @@
               </tr>
               <!-- 第三行：曜日 -->
               <tr>
-                <th v-for="item in dayList" :key="item.date" :class="[{ sun: item.week === 0, sat: item.week === 6 }]"
-                  class="week-head">
+                <th
+                  v-for="item in dayList"
+                  :key="item.date"
+                  :class="[{ sun: item.week === 0, sat: item.week === 6 }]"
+                  class="week-head"
+                >
                   {{ item.weekName }}
                 </th>
               </tr>
@@ -66,13 +73,25 @@
                 <td class="fixed-cell">{{ emp.name }}</td>
                 <td class="fixed-cell">{{ emp.restTotal }}</td>
                 <td class="fixed-cell">{{ emp.setRest }}</td>
-                <td v-for="day in dayList" :key="day.date" class="drop-cell" @dragover.prevent
+                <td
+                  v-for="day in dayList"
+                  :key="day.date"
+                  class="drop-cell"
+                  @dragover.prevent
                   @drop="handleDrop($event, idx, day.date, 'single')"
-                  @dragstart="cellDragStart($event, idx, day.date, 'single')" draggable="true">
-                  <div class="split-bg" v-if="emp.colorMap[day.date]" :style="{ background: emp.colorMap[day.date] }">
-                  </div>
-                  <div class="cell-text" :class="getTextAlign(emp, day.date)"
-                    :style="{ color: getTextColor(emp, day.date) }">
+                  @dragstart="cellDragStart($event, idx, day.date, 'single')"
+                  draggable="true"
+                >
+                  <div
+                    class="split-bg"
+                    v-if="emp.colorMap[day.date]"
+                    :style="{ background: emp.colorMap[day.date] }"
+                  ></div>
+                  <div
+                    class="cell-text"
+                    :class="getTextAlign(emp, day.date)"
+                    :style="{ color: getTextColor(emp, day.date) }"
+                  >
                     {{
                       ['早', '中', '遅'].includes(emp.cellText[day.date] ?? '')
                         ? ''
@@ -92,12 +111,21 @@
       <!-- 出勤区分（business_type !== 03 时显示） -->
       <div class="type-col" v-if="businessType !== '03'">
         <div class="col-title">出勤区分</div>
-        <div v-for="item in workTypeList" :key="item.code" class="drag-item" draggable="true"
-          @dragstart="dragStart($event, item)">
+        <div
+          v-for="item in workTypeList"
+          :key="item.code"
+          class="drag-item"
+          draggable="true"
+          @dragstart="dragStart($event, item)"
+        >
           <span class="item-text">{{ item.name }}</span>
           <div class="small-block" :style="{ background: item.bg }">
-            <span v-if="item.text" class="block-text" :class="getPreviewAlign(item.text)"
-              :style="{ color: getPreviewColor(item.text) }">
+            <span
+              v-if="item.text"
+              class="block-text"
+              :class="getPreviewAlign(item.text)"
+              :style="{ color: getPreviewColor(item.text) }"
+            >
               {{ item.text }}
             </span>
           </div>
@@ -106,12 +134,21 @@
       <!-- 休暇区分（始终显示） -->
       <div class="type-col print-area">
         <div class="col-title">休暇区分</div>
-        <div v-for="item in restTypeList" :key="item.code" class="drag-item" draggable="true"
-          @dragstart="dragStart($event, item)">
+        <div
+          v-for="item in restTypeList"
+          :key="item.code"
+          class="drag-item"
+          draggable="true"
+          @dragstart="dragStart($event, item)"
+        >
           <span class="item-text">{{ item.name }}</span>
           <div class="small-block" :style="{ background: item.bg }">
-            <span v-if="item.text" class="block-text" :class="getPreviewAlign(item.text)"
-              :style="{ color: getPreviewColor(item.text) }">
+            <span
+              v-if="item.text"
+              class="block-text"
+              :class="getPreviewAlign(item.text)"
+              :style="{ color: getPreviewColor(item.text) }"
+            >
               {{ item.text }}
             </span>
           </div>
@@ -120,12 +157,21 @@
       <!-- 3. 応援区分・会議他区分（始终显示） -->
       <div class="type-col print-area">
         <div class="col-title">応援区分・会議他区分</div>
-        <div v-for="item in supportTypeList" :key="item.code" class="drag-item" draggable="true"
-          @dragstart="dragStart($event, item)">
+        <div
+          v-for="item in supportTypeList"
+          :key="item.code"
+          class="drag-item"
+          draggable="true"
+          @dragstart="dragStart($event, item)"
+        >
           <span class="item-text">{{ item.name }}</span>
           <div class="small-block" :style="{ background: item.bg }">
-            <span v-if="item.text" class="block-text" :class="getPreviewAlign(item.text)"
-              :style="{ color: getPreviewColor(item.text) }">
+            <span
+              v-if="item.text"
+              class="block-text"
+              :class="getPreviewAlign(item.text)"
+              :style="{ color: getPreviewColor(item.text) }"
+            >
               {{ item.text }}
             </span>
           </div>
@@ -135,19 +181,30 @@
       <div class="type-col print-area" v-if="businessType === '03'">
         <div class="col-title">出勤区分</div>
         <!-- 用Grid实现自适应多列布局 -->
-        <div class="new-work-grid new-work-grid--custom" :style="{ gridTemplateColumns: newWorkGridColumns }">
-          <div v-for="item in newWorkTypeList" :key="item.kinmuIdx" class="drag-item" draggable="true" @dragstart="
-            dragStart($event, {
-              kinmuCd: '01',
-              code: `new-work-${item.kinmuIdx}`,
-              name: `${item.displayText}: ${item.kinmuStartTime}~${item.kinmuEndTime}`,
-              bg: item.bg,
-              text: getCircledNum(item.kinmuIdx),
-              textAlign: 'center',
-            })
-            ">
+        <div
+          class="new-work-grid new-work-grid--custom"
+          :style="{ gridTemplateColumns: newWorkGridColumns }"
+        >
+          <div
+            v-for="item in newWorkTypeList"
+            :key="item.kinmuIdx"
+            class="drag-item"
+            draggable="true"
+            @dragstart="
+              dragStart($event, {
+                kinmuCd: '01',
+                code: `new-work-${item.kinmuIdx}`,
+                name: `${item.displayText}: ${item.kinmuStartTime}~${item.kinmuEndTime}`,
+                bg: item.bg,
+                text: getCircledNum(item.kinmuIdx),
+                textAlign: 'center',
+              })
+            "
+          >
             <!-- 左侧显示：出勤名称 + 时间段 -->
-            <span class="item-text">{{ item.displayText }}: {{ item.kinmuStartTime }}~{{ item.kinmuEndTime }}</span>
+            <span class="item-text"
+              >{{ item.displayText }}: {{ item.kinmuStartTime }}~{{ item.kinmuEndTime }}</span
+            >
             <!-- 右侧绿色背景 + 序号 -->
             <div class="small-block small-block--custom" :style="{ background: item.bg }">
               <span class="block-text center">{{ getCircledNum(item.kinmuIdx) }}</span>
@@ -163,7 +220,10 @@
         <!-- 标题 -->
         <div class="event-title">{{ Number(selectYM.split('-')[1]) }}月主要イベント一覧</div>
         <!-- 右侧操作按钮 -->
-        <div style="position: absolute; right: 8px; margin: 0 0 15px 0; display: flex; gap:8px" class="print-hide">
+        <div
+          style="position: absolute; right: 8px; margin: 0 0 15px 0; display: flex; gap: 8px"
+          class="print-hide"
+        >
           <el-button type="primary" @click="toggleEventEdit">変更</el-button>
           <el-button type="primary" @click="openAddEvent">追加</el-button>
           <el-button type="success" @click="saveAllEvent">保存</el-button>
@@ -179,23 +239,33 @@
                 <th class="th-no">項</th>
                 <th class="th-day">日付</th>
                 <th class="th-content">イベント内容</th>
-                <th style="width:80px">操作</th>
+                <th style="width: 80px">操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, idx) in leftEventList" :key="item.id" :class="idx % 2 === 0 ? 'odd' : 'even'">
+              <tr
+                v-for="(item, idx) in leftEventList"
+                :key="item.id"
+                :class="idx % 2 === 0 ? 'odd' : 'even'"
+              >
                 <td>{{ item.no }}</td>
                 <td v-if="!eventEditMode">{{ item.day }}</td>
                 <td v-if="eventEditMode">
-                  <el-date-picker v-model="item.fullDate" type="date" value-format="YYYY-MM-DD"
-                    @change="updateEventShowDay(item)" />
+                  <el-date-picker
+                    v-model="item.fullDate"
+                    type="date"
+                    value-format="YYYY-MM-DD"
+                    @change="updateEventShowDay(item)"
+                  />
                 </td>
                 <td v-if="!eventEditMode">{{ item.content }}</td>
                 <td v-if="eventEditMode">
                   <el-input v-model="item.content" maxlength="20" placeholder="20文字以内" />
                 </td>
                 <td>
-                  <el-button type="danger" size="small" icon="Delete" @click="deleteEvent(item.id)">削除</el-button>
+                  <el-button type="danger" size="small" icon="Delete" @click="deleteEvent(item.id)"
+                    >削除</el-button
+                  >
                 </td>
               </tr>
             </tbody>
@@ -210,23 +280,33 @@
                 <th class="th-no">項</th>
                 <th class="th-day">日付</th>
                 <th class="th-content">イベント内容</th>
-                <th style="width:80px">操作</th>
+                <th style="width: 80px">操作</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(item, idx) in rightEventList" :key="item.id" :class="idx % 2 === 0 ? 'odd' : 'even'">
+              <tr
+                v-for="(item, idx) in rightEventList"
+                :key="item.id"
+                :class="idx % 2 === 0 ? 'odd' : 'even'"
+              >
                 <td>{{ item.no }}</td>
                 <td v-if="!eventEditMode">{{ item.day }}</td>
                 <td v-if="eventEditMode">
-                  <el-date-picker v-model="item.fullDate" type="date" value-format="YYYY-MM-DD"
-                    @change="updateEventShowDay(item)" />
+                  <el-date-picker
+                    v-model="item.fullDate"
+                    type="date"
+                    value-format="YYYY-MM-DD"
+                    @change="updateEventShowDay(item)"
+                  />
                 </td>
                 <td v-if="!eventEditMode">{{ item.content }}</td>
                 <td v-if="eventEditMode">
                   <el-input v-model="item.content" maxlength="20" placeholder="20文字以内" />
                 </td>
                 <td>
-                  <el-button type="danger" size="small" icon="Delete" @click="deleteEvent(item.id)">削除</el-button>
+                  <el-button type="danger" size="small" icon="Delete" @click="deleteEvent(item.id)"
+                    >削除</el-button
+                  >
                 </td>
               </tr>
             </tbody>
@@ -236,7 +316,10 @@
     </el-card>
 
     <!-- ==========追加：他店情報エリア（非ドラッグ）========== -->
-    <div class="other-shop-title print-hide" style="margin-top: 20px; font-weight: bold; font-size: 15px">
+    <div
+      class="other-shop-title print-hide"
+      style="margin-top: 20px; font-weight: bold; font-size: 15px"
+    >
       他店情報
     </div>
     <div class="other-shop-wrap print-hide">
@@ -247,8 +330,11 @@
               <tr>
                 <th colspan="4" rowspan="3" class="title-th">{{ shop.name }} {{ currentYM }}</th>
                 <template v-for="(item, idx) in dayList" :key="item.date">
-                  <th v-if="idx === 0 || dayList[idx - 1]?.showYM !== item.showYM" :colspan="getColSpan(idx)"
-                    class="title-th">
+                  <th
+                    v-if="idx === 0 || dayList[idx - 1]?.showYM !== item.showYM"
+                    :colspan="getColSpan(idx)"
+                    class="title-th"
+                  >
                     {{ item.showYM }}
                   </th>
                 </template>
@@ -257,8 +343,12 @@
                 <th v-for="item in dayList" :key="item.date" class="day-head">{{ item.dayNum }}</th>
               </tr>
               <tr>
-                <th v-for="item in dayList" :key="item.date" :class="[{ sun: item.week === 0, sat: item.week === 6 }]"
-                  class="week-head">
+                <th
+                  v-for="item in dayList"
+                  :key="item.date"
+                  :class="[{ sun: item.week === 0, sat: item.week === 6 }]"
+                  class="week-head"
+                >
                   {{ item.weekName }}
                 </th>
               </tr>
@@ -278,8 +368,11 @@
                 <td class="fixed-cell">{{ emp.setRest }}</td>
                 <!-- 【关键】去掉draggable、@drop、@dragstart，禁止拖拽 -->
                 <td v-for="day in dayList" :key="day.date" class="drop-cell">
-                  <div class="split-bg" v-if="emp.colorMap[day.date]" :style="{ background: emp.colorMap[day.date] }">
-                  </div>
+                  <div
+                    class="split-bg"
+                    v-if="emp.colorMap[day.date]"
+                    :style="{ background: emp.colorMap[day.date] }"
+                  ></div>
                   <!-- <div
                     class="cell-text"
                     v-if="emp.cellText[day.date] == '希'"
@@ -290,8 +383,11 @@
                   <div class="cell-text" v-if="emp.cellText[day.date] != '希'">
                     {{ emp.cellText[day.date] }}
                   </div> -->
-                  <div class="cell-text" :class="getTextAlign(emp, day.date)"
-                    :style="{ color: getTextColor(emp, day.date) }">
+                  <div
+                    class="cell-text"
+                    :class="getTextAlign(emp, day.date)"
+                    :style="{ color: getTextColor(emp, day.date) }"
+                  >
                     {{
                       ['早', '中', '遅'].includes(emp.cellText[day.date] ?? '')
                         ? ''
@@ -322,16 +418,44 @@
         </el-tab-pane>
         <el-tab-pane label="グループ以外応援" name="outer">
           <!-- 検索エリア -->
-          <div style="display:flex; gap:12px; align-items:center; margin-bottom:10px; flex-wrap:wrap">
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              align-items: center;
+              margin-bottom: 10px;
+              flex-wrap: wrap;
+            "
+          >
             <!-- 業態下拉：選択すると店舗候補が自動絞込 -->
-            <el-select v-model="outerSearchForm.businessType" placeholder="業態を選択" style="width:160px" clearable>
-              <el-option v-for="bt in businessTypeOptions" :key="bt.value" :label="bt.label" :value="bt.value" />
+            <el-select
+              v-model="outerSearchForm.businessType"
+              placeholder="業態を選択"
+              style="width: 160px"
+              clearable
+            >
+              <el-option
+                v-for="bt in businessTypeOptions"
+                :key="bt.value"
+                :label="bt.label"
+                :value="bt.value"
+              />
             </el-select>
 
             <!-- 入力可能店舗下拉 filterable -->
-            <el-select v-model="outerSearchForm.shopKeyword" filterable placeholder="店舗コードまたは名称を入力" style="width:320px"
-              clearable>
-              <el-option v-for="opt in outerShopOptions" :key="opt.value" :label="opt.label" :value="opt.value" />
+            <el-select
+              v-model="outerSearchForm.shopKeyword"
+              filterable
+              placeholder="店舗コードまたは名称を入力"
+              style="width: 320px"
+              clearable
+            >
+              <el-option
+                v-for="opt in outerShopOptions"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
             </el-select>
             <el-button type="primary" @click="searchOuterShop">検索</el-button>
           </div>
@@ -351,12 +475,24 @@
     <el-dialog v-model="eventAddDialogVisible" title="特殊日説明追加" width="600">
       <el-form :model="eventAddForm" label-width="75px">
         <el-form-item label="日付">
-          <el-date-picker v-model="eventAddForm.fullDate" type="date" :disabled-date="disabledDate" placeholder="日付を選択"
-            value-format="YYYY-MM-DD" @change="handleDateChange" :key="pickerKey" />
+          <el-date-picker
+            v-model="eventAddForm.fullDate"
+            type="date"
+            :disabled-date="disabledDate"
+            placeholder="日付を選択"
+            value-format="YYYY-MM-DD"
+            @change="handleDateChange"
+            :key="pickerKey"
+          />
         </el-form-item>
         <el-form-item label="内容">
-          <el-input v-model="eventAddForm.content" type="textarea" rows="3" :maxlength="20"
-            placeholder="説明文を入力、20 文字以内"></el-input>
+          <el-input
+            v-model="eventAddForm.content"
+            type="textarea"
+            rows="3"
+            :maxlength="20"
+            placeholder="説明文を入力、20 文字以内"
+          ></el-input>
           <!-- 字符数提示 -->
           <div class="char-count">{{ eventAddForm.content.length }} / 20</div>
         </el-form-item>
@@ -402,7 +538,7 @@ type EmpItem = {
   hopeDays: string[] // 希望休日期数组 'yyyy-MM-dd'
 }
 type ShopItem = { code: string; name: string; empList: EmpItem[] }
-type SupportShop = { code: string; name: string, businessType: string }
+type SupportShop = { code: string; name: string; businessType: string }
 
 // SSQ 出勤区分
 type NewWorkItem = {
@@ -1615,17 +1751,16 @@ const printPage = () => window.print()
 
 onMounted(() => makeDayRange())
 
-
 // グループ以外応援 検索条件
 const outerSearchForm = ref({
   businessType: '',
-  shopKeyword: ''
+  shopKeyword: '',
 })
 
 // 検索実行時に保存する検索条件（テーブル絞込に使用）
 const searchCondition = ref({
   businessType: '',
-  shopKeyword: ''
+  shopKeyword: '',
 })
 
 // 業態選択肢
@@ -1645,14 +1780,16 @@ const originOuterShopList = ref<SupportShop[]>([
 
 // 店舗ドロップダウン候補：業態だけでリアルタイム絞込（検索ボタン不要）
 const outerShopOptions = computed(() => {
-  return originOuterShopList.value.filter(item => {
-    const bt = outerSearchForm.value.businessType
-    if (!bt) return true
-    return (item as any).businessType === bt
-  }).map(item => ({
-    label: `${item.code} ${item.name}`,
-    value: item.code
-  }))
+  return originOuterShopList.value
+    .filter((item) => {
+      const bt = outerSearchForm.value.businessType
+      if (!bt) return true
+      return (item as any).businessType === bt
+    })
+    .map((item) => ({
+      label: `${item.code} ${item.name}`,
+      value: item.code,
+    }))
 })
 
 // テーブル表示用データ：検索ボタン押下後の条件で絞込
@@ -1661,17 +1798,15 @@ const filterOuterShopList = computed(() => {
   const bt = searchCondition.value.businessType
   const keyword = searchCondition.value.shopKeyword.trim()
   if (!bt && !keyword) {
-    return [];
+    return []
   }
   // 業態条件フィルタ
   if (bt) {
-    list = list.filter(item => (item as any).businessType === bt)
+    list = list.filter((item) => (item as any).businessType === bt)
   }
   // 店舗コード/名称曖昧検索
   if (keyword) {
-    list = list.filter(item =>
-      item.code.includes(keyword) || item.name.includes(keyword)
-    )
+    list = list.filter((item) => item.code.includes(keyword) || item.name.includes(keyword))
   }
   return list
 })
@@ -1681,7 +1816,7 @@ const outerShopList = computed(() => filterOuterShopList.value)
 const searchOuterShop = () => {
   searchCondition.value = {
     businessType: outerSearchForm.value.businessType,
-    shopKeyword: outerSearchForm.value.shopKeyword
+    shopKeyword: outerSearchForm.value.shopKeyword,
   }
 }
 
@@ -1689,7 +1824,7 @@ watch(
   () => outerSearchForm.value.businessType,
   () => {
     outerSearchForm.value.shopKeyword = ''
-  }
+  },
 )
 
 const eventEditMode = ref(false)
@@ -1708,20 +1843,20 @@ const updateEventShowDay = (item: EventItem) => {
 
 /** 単条イベント削除 */
 const deleteEvent = (delId: number) => {
-  allEventList.value = allEventList.value.filter(e => e.id !== delId)
+  allEventList.value = allEventList.value.filter((e) => e.id !== delId)
   ElMessage.success('削除完了')
 }
 
 /** 保存ボタン：追加・編集した内容を確定保存 */
 const saveAllEvent = () => {
   // 文字数チェック
-  const overItem = allEventList.value.find(e => e.content.length > 20)
+  const overItem = allEventList.value.find((e) => e.content.length > 20)
   if (overItem) {
     ElMessage.error(`項${overItem.no}：内容は20文字以内にしてください`)
     return
   }
   // 日付重複チェック（同一日内複数イベント許可しない場合）
-  const dateArr = allEventList.value.map(i => i.fullDate)
+  const dateArr = allEventList.value.map((i) => i.fullDate)
   const unique = new Set(dateArr)
   if (unique.size !== dateArr.length) {
     ElMessage.warning('同一日に複数イベントは登録できません')
@@ -1982,11 +2117,11 @@ const saveAllEvent = () => {
   gap: 10px;
   /* 列之间固定间隙 */
   grid-auto-flow: column;
-  grid-template-rows: repeat(15, 1fr);
+  grid-template-rows: repeat(15, min-content);
 }
 
 /* 关键：给每列设置固定宽度 */
-.new-work-grid--custom>* {
+.new-work-grid--custom > * {
   min-width: 250px;
   /* 固定每列宽度，可按需调整 */
 }
