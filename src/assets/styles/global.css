@@ -1,0 +1,93 @@
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 5mm;
+  }
+
+  /* 左サイドメニュー非表示・レイアウト埋める */
+  aside.layout-sidebar.print-hide {
+    display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
+    min-width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    flex-shrink: 0 !important;
+  }
+  .layout-container {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .layout-main {
+    width: 100% !important;
+    padding: 0 !important;
+    background: #fff !important;
+  }
+  .print-hide:not(.layout-sidebar) {
+    visibility: hidden !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+  .el-button,
+  .el-input__wrapper,
+  .el-select__wrapper,
+  .el-date-editor {
+    display: none !important;
+  }
+
+  /* ========== 1. SVG/丸囲み記号 描画強制 ========== */
+  svg,
+  svg path,
+  .el-icon,
+  .el-icon svg {
+    fill: #000000 !important;
+    color: #000 !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ========== 2. 赤文字記号を印刷時黒文字強制 ========== */
+  .red-mark,
+  span[style*="color:red"],
+  span[style*="color:#f00"],
+  span[style*="color:red"],
+  .text-red {
+    color: #000000 !important;
+    font-weight: bold !important;
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ========== 3. テーブル線印刷対応（既存維持） ========== */
+  table {
+    width: 100% !important;
+    table-layout: auto !important;
+    border-collapse: collapse !important;
+    border: 1px solid #000000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  table th,
+  table td {
+    border: 1px solid #000000 !important;
+    border-color: #000 !important;
+    border-style: solid !important;
+    border-width: 1px !important;
+    white-space: normal !important;
+    font-size: 9px !important;
+    padding: 1px 2px !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* ========== 4. 全体文字透明度強制100% ========== */
+  * {
+    opacity: 1 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
