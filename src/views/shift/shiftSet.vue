@@ -1,6 +1,6 @@
 <template>
   <!-- 最外层容器绑定全局drop，实现拖出页面任意空白/下方分类区松手删除 -->
-  <div class="container" @dragover.prevent @drop="onGlobalDrop">
+  <div class="container" @dragover.prevent @drop="onGlobalDrop" @click="clearSelectedItem">
     <div class="page-title">シフト表作成</div>
     <!-- 上部年月按钮区域 -->
     <el-card shadow="hover" class="top-card print-hide">
@@ -80,6 +80,7 @@
                   @dragover.prevent
                   @drop="handleDrop($event, idx, day.date, 'single')"
                   @dragstart="cellDragStart($event, idx, day.date, 'single')"
+                  @contextmenu.prevent="rightAssignShift(idx, day.date, 'single')"
                   draggable="true"
                 >
                   <div
@@ -107,7 +108,7 @@
     </div>
 
     <!-- 下方三大拖拽分类：文字在前、色块在后 -->
-    <div class="bottom-type-wrap print-area" :style="{ gridTemplateColumns: bottomGridColumns }">
+    <div class="bottom-type-wrap print-hide" :style="{ gridTemplateColumns: bottomGridColumns }">
       <!-- 出勤区分（business_type !== 03 时显示） -->
       <div class="type-col" v-if="businessType !== '03'">
         <div class="col-title">出勤区分</div>
@@ -117,6 +118,8 @@
           class="drag-item"
           draggable="true"
           @dragstart="dragStart($event, item)"
+          @click.stop="selectWorkItem(item)"
+          :class="{ active: selectedUniqueKey   === item.code }"
         >
           <span class="item-text">{{ item.name }}</span>
           <div class="small-block" :style="{ background: item.bg }">
@@ -140,6 +143,8 @@
           class="drag-item"
           draggable="true"
           @dragstart="dragStart($event, item)"
+          @click.stop="selectWorkItem(item)"
+          :class="{ active: selectedUniqueKey   === item.code }"
         >
           <span class="item-text">{{ item.name }}</span>
           <div class="small-block" :style="{ background: item.bg }">
@@ -163,6 +168,8 @@
           class="drag-item"
           draggable="true"
           @dragstart="dragStart($event, item)"
+          @click.stop="selectWorkItem(item)"
+          :class="{ active: selectedUniqueKey   === item.code }"
         >
           <span class="item-text">{{ item.name }}</span>
           <div class="small-block" :style="{ background: item.bg }">
@@ -196,10 +203,12 @@
                 code: `new-work-${item.kinmuIdx}`,
                 name: `${item.displayText}: ${item.kinmuStartTime}~${item.kinmuEndTime}`,
                 bg: item.bg,
-                text: getCircledNum(item.kinmuIdx),
+                text: `${item.displayText}`,
                 textAlign: 'center',
               })
             "
+            @click.stop="selectWorkItem(item)"
+            :class="{ active: selectedUniqueKey   === `new-work-${item.kinmuIdx}` }"
           >
             <!-- 左侧显示：出勤名称 + 时间段 -->
             <span class="item-text"
@@ -411,7 +420,7 @@
             <el-table-column label="店舗名" prop="name" />
             <el-table-column label="操作">
               <template #default="scope">
-                <el-button size="small" @click="selectSupportShop(scope.row)">選択</el-button>
+                <el-button size="small" @click.stop="selectSupportShop(scope.row)">選択</el-button>
               </template>
             </el-table-column>
           </el-table>
@@ -502,6 +511,29 @@
         <el-button type="primary" @click="submitAddEvent">登録</el-button>
       </template>
     </el-dialog>
+
+    <!-- 一时保存+登录 共用弹窗 -->
+    <el-dialog
+      v-model="dialogVisible"
+      title="確認"
+      width="420px"
+      :show-close="true"
+      custom-class="message-box-dialog"
+      append-to-body
+    >
+      <div class="msg-content">
+        <el-icon color="#909399" size="24">
+          <InfoFilled />
+        </el-icon>
+        <span>{{ dialogText }}</span>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="dialogVisible = false">キャンセル</el-button>
+          <el-button type="primary" @click="handleConfirm">確認</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -531,8 +563,8 @@ type DayItem = {
 type EmpItem = {
   post: string
   name: string
-  restTotal: number
-  setRest: number
+  restTotal: String
+  setRest: String
   colorMap: Record<string, string>
   cellText: Record<string, string>
   hopeDays: string[] // 希望休日期数组 'yyyy-MM-dd'
@@ -561,6 +593,7 @@ type EventItem = {
   no: number // 画面表示連番1,2,3…
 }
 
+
 // 弹窗関連
 const eventAddDialogVisible = ref(false)
 interface EventAddForm {
@@ -587,6 +620,73 @@ const currentYearMonth = computed(() => selectYM.value.replace('-', ''))
 let dragCurrent: DragItem | null = null
 let dropTargetInfo: { empIdx: number; date: string; flag: string | number } | null = null
 let cellDragInfo: { empIdx: number; date: string; flag: string | number } | null = null
+
+
+// 左键选中的排班分类，用于右键批量赋值
+const selectedUniqueKey  = ref<string | null>(null)
+let currentSelectDragItem: DragItem | null = null
+
+// 左键点击选中排班分类，更新全局缓存  @param item 选中的排班分类对象
+const selectWorkItem = (item: DragItem | NewWorkItem) => {
+  let uniqueKey: string
+  let selectItem: DragItem
+
+  if ('code' in item) {
+    uniqueKey = item.code
+    selectItem = { ...item }
+  } else {
+    uniqueKey = `new-work-${item.kinmuIdx}`
+    // 构造拖拽需要的标准DragItem对象
+    selectItem = {
+      kinmuCd: '01',
+      code: uniqueKey,
+      name: `${item.displayText}`,
+      bg: item.bg,
+      text: `${item.displayText}`,
+      textAlign: 'center'
+    }
+  }
+
+  selectedUniqueKey.value = uniqueKey
+  currentSelectDragItem = selectItem
+
+  ElMessage.success(`【${selectItem.name}】を選択しました。表のセルを右クリックすると、値を素早く設定できます。`)
+}
+
+//右键单元格快速赋值选中的排班
+const rightAssignShift = (empIdx: number, date: string, flag: string | number) => {
+  // 未选中任何排班分类，提示
+  if (!currentSelectDragItem) {
+    ElMessage.warning('下部のシフト区分を左クリック後、セルを右クリックして値を割り当ててください。')
+    return
+  }
+
+  let targetEmp!: EmpItem
+  if (flag === 'single') {
+    targetEmp = singleShop.value.empList[empIdx]!
+  }
+
+  // 応援类型弹窗选择店铺
+  if (currentSelectDragItem.kinmuCd === '03') {
+    dropTargetInfo = { empIdx, date, flag }
+    dragCurrent = currentSelectDragItem
+    supportModalVisible.value = true
+    return
+  }
+
+  // 赋值排班样式与文字
+  targetEmp.colorMap[date] = currentSelectDragItem.bg
+  targetEmp.cellText[date] = currentSelectDragItem.text ?? ''
+}
+
+//点击页面空白处，清空选中的排班分类
+const clearSelectedItem = () => {
+  if (selectedUniqueKey.value) {
+    selectedUniqueKey.value = null
+    currentSelectDragItem = null
+    ElMessage.info('シフト区分の選択を解除しました。')
+  }
+}
 
 // 希望休底色（浅灰对半）
 const hopeBg = 'linear-gradient(90deg,#eeeeee 50%,#eeeeee 50%)'
@@ -1178,8 +1278,8 @@ const singleShop = ref<ShopItem>({
     {
       post: '店長',
       name: '田中太郎',
-      restTotal: 9,
-      setRest: 9,
+      restTotal: '9',
+      setRest: '9',
       colorMap: {},
       cellText: {},
       hopeDays: ['2026-06-03', '2026-06-08'],
@@ -1187,8 +1287,8 @@ const singleShop = ref<ShopItem>({
     {
       post: '副店長',
       name: '田中次郎',
-      restTotal: 9,
-      setRest: 9,
+      restTotal: '9',
+      setRest: '9',
       colorMap: {},
       cellText: {},
       hopeDays: ['2026-06-12'],
@@ -1196,10 +1296,36 @@ const singleShop = ref<ShopItem>({
     {
       post: '店員',
       name: '田中三郎',
-      restTotal: 9,
-      setRest: 9,
+      restTotal: '9',
+      setRest: '9',
       colorMap: {},
       cellText: {},
+      hopeDays: [],
+    },
+    {
+      post: '応援',
+      name: '	鈴木一郎',
+      restTotal: '/',
+      setRest: '/',
+      colorMap: {
+        '2026-05-27': '#ffcc99',
+        '2026-06-04': '#ffcc99'
+      },
+      cellText: {'2026-05-27':'1248',
+                '2026-06-04':'1248'},
+      hopeDays: [],
+    },
+    {
+      post: '応援',
+      name: '	鈴木三郎',
+      restTotal: '/',
+      setRest: '/',
+      colorMap: {
+        '2026-06-01': '#ffcc99',
+        '2026-06-12': '#ffcc99'
+      },
+      cellText: {'2026-06-01':'1129',
+                '2026-06-12':'1129'},
       hopeDays: [],
     },
   ],
@@ -1212,8 +1338,8 @@ const groupShopList = ref<ShopItem[]>([
       {
         post: '店長',
         name: '田中太郎',
-        restTotal: 9,
-        setRest: 9,
+        restTotal: '9',
+        setRest: '9',
         colorMap: {},
         cellText: {},
         hopeDays: ['2026-06-05'],
@@ -1221,8 +1347,8 @@ const groupShopList = ref<ShopItem[]>([
       {
         post: '副店長',
         name: '田中三郎',
-        restTotal: 8,
-        setRest: 9,
+        restTotal: '8',
+        setRest: '9',
         colorMap: {},
         cellText: {},
         hopeDays: ['2026-06-09'],
@@ -1236,8 +1362,8 @@ const groupShopList = ref<ShopItem[]>([
       {
         post: '店長',
         name: '鈴木一郎',
-        restTotal: 8,
-        setRest: 8,
+        restTotal: '8',
+        setRest: '8',
         colorMap: {},
         cellText: {},
         hopeDays: ['2026-05-31'],
@@ -1245,8 +1371,8 @@ const groupShopList = ref<ShopItem[]>([
       {
         post: '副店長',
         name: '鈴木三郎',
-        restTotal: 8,
-        setRest: 9,
+        restTotal: '8',
+        setRest: '8',
         colorMap: {},
         cellText: {},
         hopeDays: ['2026-06-17'],
@@ -1331,8 +1457,9 @@ const makeDayRange = () => {
   }
   const workBg = 'linear-gradient(90deg,#73d055 50%,#73d055 50%)'
   // 遍历本店员工填充希望休
-  singleShop.value.empList.forEach((emp) => {
-    dayList.value.forEach((d) => {
+  singleShop.value.empList.forEach((emp, empIndex) => {
+    if (empIndex < singleShop.value.empList.length - 2) {
+      dayList.value.forEach((d) => {
       emp.colorMap[d.date] = workBg
     })
 
@@ -1340,6 +1467,7 @@ const makeDayRange = () => {
       emp.cellText[date] = '希'
       emp.colorMap[date] = '#fff'
     })
+    }
   })
   // =====他店初期化=====
   groupShopList.value.forEach((shop) => {
@@ -1745,8 +1873,37 @@ const bottomGridColumns = computed(() => {
   return `${newWorkWidth} 1fr 1fr`
 })
 
-const tempSave = () => ElMessage.success('一時保存完了')
-const submitSave = () => ElMessage.success('登録完了')
+// 一时保存+登录
+// 弹窗显示状态
+const dialogVisible = ref(false)
+// 弹窗提示文案
+const dialogText = ref('')
+// 存储当前点击按钮对应的确认回调函数
+let confirmCallback: () => void = () => {}
+
+// 一時保存按钮
+const tempSave = () => {
+  dialogText.value = '一時保存します。よろしいですか？'
+  confirmCallback = () => {
+    ElMessage.success('一時保存完了')
+    // 后续可在这里补充临时保存接口请求逻辑
+  }
+  dialogVisible.value = true
+}
+// 登録按钮
+const submitSave = () => {
+  dialogText.value = '登録します。よろしいですか？'
+  confirmCallback = () => {
+    ElMessage.success('登録完了')
+    // 后续可在这里补充正式提交接口请求逻辑
+  }
+  dialogVisible.value = true
+}
+// 弹窗确认执行方法
+const handleConfirm = () => {
+  dialogVisible.value = false
+  confirmCallback()
+}
 const printPage = () => window.print()
 
 onMounted(() => makeDayRange())
@@ -1898,14 +2055,13 @@ const saveAllEvent = () => {
 
 .shift-table {
   border-collapse: collapse !important;
-  border: 0.5px solid #999;
   font-size: 12px;
   width: 100%;
 }
 
 .shift-table th,
 .shift-table td {
-  border: 0.5px solid #999 !important;
+  border: 0.5px solid #999;
   padding: 2px;
   text-align: center;
 }
@@ -1991,6 +2147,10 @@ const saveAllEvent = () => {
   border: 1px solid #eee;
   border-radius: 4px;
   cursor: grab;
+}
+
+:deep(.drag-item.active) {
+box-shadow: 0 0 6px 2px #ccc;;
 }
 
 .item-text {
@@ -2135,5 +2295,35 @@ const saveAllEvent = () => {
 
 .small-block--custom .block-text {
   font-size: 16px;
+}
+
+.msg-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 5px 0;
+}
+.msg-text {
+  font-size: 15px;
+  color: #606266;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+</style>
+<style lang="scss">
+.message-box-dialog {
+  .el-dialog__header {
+    padding: 20px 20px 10px;
+  }
+  .el-dialog__body {
+    padding: 10px 20px 20px;
+  }
+  .el-dialog__footer {
+    padding: 10px 20px 20px;
+    text-align: right;
+  }
 }
 </style>

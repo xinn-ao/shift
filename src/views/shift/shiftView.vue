@@ -12,31 +12,52 @@
     </div> -->
 
     <!-- 上部グループ+年月（グループ上段、年月下段） -->
-    <div class="top-bar" style="margin-bottom: 20px; background-color: #fff; padding: 20px 30px 20px 30px"
-      v-if="userRole !== 'NORMAL_USER'">
+    <div
+      class="top-bar"
+      style="margin-bottom: 20px; background-color: #fff; padding: 20px 30px 20px 30px"
+      v-if="userRole !== 'NORMAL_USER'"
+    >
       <!-- 下拉框 -->
-      <div class="group-select" style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px"
-        v-if="userRole === 'BLOCK_USER'">
+      <div
+        class="group-select"
+        style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px"
+        v-if="userRole === 'BLOCK_USER'"
+      >
         <span>グループ：</span>
         <el-select v-model="selectedGroup" placeholder="グループ選択" style="width: 220px">
           <el-option label="グループ一覧" value="all" />
-          <el-option v-for="item in groupList" :key="item.groupId" :label="`${item.groupId} ${item.groupName}`"
-            :value="item.groupId" />
+          <el-option
+            v-for="item in groupList"
+            :key="item.groupId"
+            :label="`${item.groupId} ${item.groupName}`"
+            :value="item.groupId"
+          />
         </el-select>
       </div>
 
       <!-- JINJI/SYSTEM/KANSA三类角色：店番搜索栏 -->
-      <div class="search-shop-bar" v-if="['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole)"
-        style="margin-bottom: 15px">
+      <div
+        class="search-shop-bar"
+        v-if="['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole)"
+        style="margin-bottom: 15px"
+      >
         <div style="display: flex; align-items: center; gap: 12px">
           <span style="width: calc(100px); text-align: left">店番</span>
-          <el-input v-model="searchShopId" placeholder="店番を入力" style="flex: 1; max-width: 320px"></el-input>
-          <el-button type="primary" @click="searchShop">検索</el-button>
+          <el-input
+            v-model="searchShopId"
+            placeholder="店番を入力"
+            style="flex: 1; max-width: 320px"
+          ></el-input>
+          <el-button type="primary" @click="searchShop" :disabled="!searchShopId">検索</el-button>
         </div>
       </div>
 
       <!-- 年月切换 -->
-      <div class="month-picker" style="display: flex; align-items: center; gap: 12px" v-if="userRole !== 'NORMAL_USER'">
+      <div
+        class="month-picker"
+        style="display: flex; align-items: center; gap: 12px"
+        v-if="userRole !== 'NORMAL_USER'"
+      >
         <span style="width: calc(100px); text-align: left">指定年月：</span>
         <el-button icon="ArrowLeft" @click="prevMonth"></el-button>
         <span>{{ targetYear }}年{{ targetMonth }}月</span>
@@ -44,10 +65,17 @@
       </div>
     </div>
 
-    <div v-for="groupItem in renderGroupList" :key="groupItem.groupId"
-      style="padding: 20px 30px; background-color: #fff; margin: 20px 0 6px 0">
+    <div
+      v-for="groupItem in renderGroupList"
+      :key="groupItem.groupId"
+      style="padding: 20px 30px; background-color: #fff; margin: 20px 0 6px 0"
+    >
       <!-- グループタイトル  -->
-      <div class="group-title" style="font-size: 17px; margin-bottom: 12px" v-if="userRole !== 'NORMAL_USER'">
+      <div
+        class="group-title"
+        style="font-size: 17px; margin-bottom: 12px"
+        v-if="userRole !== 'NORMAL_USER'"
+      >
         {{ groupItem.groupName }}
       </div>
       <!-- <div v-if="userRole === 'NORMAL_USER'" class="normal-cal-wrap">
@@ -101,19 +129,29 @@
             </tr>
             <!-- 第2行：日期数字行（前4列空，对应店铺标题合并区域） -->
             <tr>
-              <th v-for="dayItem in dateList" :key="dayItem.day" class="day-head" :style="{
-                color:
-                  dayItem.week === '日' ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
-              }">
+              <th
+                v-for="dayItem in dateList"
+                :key="dayItem.day"
+                class="day-head"
+                :style="{
+                  color:
+                    dayItem.week === '日' ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
+                }"
+              >
                 {{ dayItem.day }}
               </th>
             </tr>
             <!-- 第3行：星期行（前4列空，对应店铺标题合并区域） -->
             <tr>
-              <th v-for="dayItem in dateList" :key="dayItem.day" class="week-head" :style="{
-                color:
-                  dayItem.week === '日' ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
-              }">
+              <th
+                v-for="dayItem in dateList"
+                :key="dayItem.day"
+                class="week-head"
+                :style="{
+                  color:
+                    dayItem.week === '日' ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
+                }"
+              >
                 {{ dayItem.week }}
               </th>
             </tr>
@@ -132,10 +170,15 @@
               <td class="fixed-cell" style="width: 50px">{{ staff.restDay }}</td>
               <td class="fixed-cell" style="width: 50px">{{ staff.setDay }}</td>
               <!-- 每日排班格子 -->
-              <td v-for="dayItem in dateList" :key="dayItem.day" class="shift-cell"
-                style="padding: 0 2px; position: relative" :style="{
+              <td
+                v-for="dayItem in dateList"
+                :key="dayItem.day"
+                class="shift-cell"
+                style="padding: 0 2px; position: relative"
+                :style="{
                   background: getShiftBg(getCellShiftInfo(staff, currentYm, dayItem.day).code),
-                }">
+                }"
+              >
                 <span style="font-size: 13px; color: #000">
                   {{ getCellShiftInfo(staff, currentYm, dayItem.day).finalText }}
                 </span>
@@ -184,8 +227,8 @@ const searchShop = () => {
 
   // 検索結果存在確認
   let hasMatchShop = false
-  groupList.value.forEach(g => {
-    if (g.shopList.some(s => s.shopId === targetSearchShopId.value)) {
+  groupList.value.forEach((g) => {
+    if (g.shopList.some((s) => s.shopId === targetSearchShopId.value)) {
       hasMatchShop = true
     }
   })

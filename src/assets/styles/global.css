@@ -67,19 +67,19 @@
     width: 100% !important;
     table-layout: auto !important;
     border-collapse: collapse !important;
-    border: 1px solid #000000 !important;
+    border: 1px solid #999999 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
   table th,
   table td {
-    border: 1px solid #000000 !important;
-    border-color: #000 !important;
+    border: 0.5px solid #999999 !important;
+    border-color: #999 !important;
     border-style: solid !important;
     border-width: 1px !important;
     white-space: normal !important;
     font-size: 9px !important;
-    padding: 1px 2px !important;
+    padding: 0px !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
@@ -89,5 +89,13 @@
     opacity: 1 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+  }
+  .split-bg {
+    left: 1px !important;
+    top: 1px !important;
+    right: 1px !important;
+    bottom: 1px !important;
+    width: auto !important;
+    height: auto !important;
   }
 }

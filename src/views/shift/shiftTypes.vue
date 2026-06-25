@@ -107,6 +107,29 @@
         </div>
       </div>
     </div>
+
+    <!-- 统一样式确认弹窗 -->
+    <el-dialog
+      v-model="registerDialogVisible"
+      title="確認"
+      width="420px"
+      :show-close="true"
+      custom-class="message-box-dialog"
+      append-to-body
+    >
+      <div class="msg-content">
+        <el-icon color="#909399" size="24">
+          <InfoFilled />
+        </el-icon>
+        <span>選択した時間帯情報を登録します。よろしいですか？</span>
+      </div>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="registerDialogVisible = false">キャンセル</el-button>
+          <el-button type="primary" @click="handleConfirmRegister">確認</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -364,12 +387,22 @@ function handleRightDrop() {
   dragItemId.value = null
 }
 
-// 提交数据
-const handleRegister = async () => {
+// 弹窗显示状态
+const registerDialogVisible = ref(false)
+
+// 打开弹窗（原按钮点击事件替换为此方法）
+const handleRegister = () => {
+  // 先做选中项校验，不通过则不打开弹窗
   if (selectedList.value.length === 0) {
     ElMessage.warning('登録する時間帯が選択されていません')
     return
   }
+  registerDialogVisible.value = true
+}
+
+// 提交数据
+const handleConfirmRegister = async () => {
+  registerDialogVisible.value = false
 
   // 按标准结构输出：kinmu_idx / kinmu_start_time / kinmu_end_time / kinmu_nick_name / sort
   const submitData = selectedList.value.map((item, index) => ({
@@ -585,5 +618,17 @@ const handleRegister = async () => {
   display: inline-block;
   text-align: center;
   vertical-align: top;
+}
+
+.msg-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 5px 0;
+}
+.dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
 }
 </style>

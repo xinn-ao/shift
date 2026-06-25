@@ -7,22 +7,33 @@
     <el-card shadow="hover" class="top-card">
       <!-- 1行目：日付・公休・選択数 -->
       <div class="row-first">
-        <span class="now-date">当日：{{ nowDateStr }}</span>
-        <div>
-          <span class="hol-text">公休数：{{ monthHolidayCnt }}日</span>
-          <!-- <span class="sel-text">選択済：{{ selectDays.length }}日</span> -->
+        <div class="now-date">
+          <span class="now-date-day">当日：{{ nowDateStr }}</span>
+          <span class="now-date-month">当月：{{ nowMonthStr }}</span>
+        </div>
+        
+        <div class="hol-text">
+          <span>公休数：{{ monthHolidayCnt }}日</span>
         </div>
       </div>
       <!-- 2行目：右寄せ 登録・キャンセル -->
       <div class="row-btn">
-        <el-button icon="ArrowLeft" v-if="userStore.role === 'NORMAL_USER'" type="primary"
-          @click="$router.push({ name: 'NormalUserMenu' })">戻る</el-button>
+        <el-button
+          icon="ArrowLeft"
+          v-if="userStore.role === 'NORMAL_USER'"
+          type="primary"
+          @click="$router.push({ name: 'NormalUserMenu' })"
+          >戻る</el-button
+        >
         <el-button type="primary" @click="handleSave">登録</el-button>
       </div>
     </el-card>
 
     <!-- カレンダー：画面中央配置、el-cardなし、大きめ正方形 -->
-    <div class="calendar-box" style="padding: 20px 30px; background-color: #fff; margin: 20px 0 6px 0">
+    <div
+      class="calendar-box"
+      style="padding: 20px 30px; background-color: #fff; margin: 20px 0 6px 0"
+    >
       <div class="calendar-wrap">
         <table class="calendar-table">
           <thead>
@@ -38,9 +49,12 @@
           </thead>
           <tbody>
             <tr v-for="(weekArr, idx) in calendarList" :key="idx">
-              <td v-for="(dayItem, wIdx) in weekArr" :key="wIdx"
+              <td
+                v-for="(dayItem, wIdx) in weekArr"
+                :key="wIdx"
                 :class="[dayItem.type, { selected: selectDays.includes(dayItem.fullDate) }]"
-                @click="toggleSelect(dayItem)">
+                @click="toggleSelect(dayItem)"
+              >
                 <span class="day-number">{{ dayItem.day || '' }}</span>
               </td>
             </tr>
@@ -77,6 +91,22 @@ const nowDateStr = computed(() => {
   const m = String(currentM).padStart(2, '0')
   const d = String(currentD).padStart(2, '0')
   return `${currentY}/${m}/${d}`
+})
+const nowMonthStr = computed(()=>{
+  const y= currentY
+  const m = currentM
+  const d= currentD
+
+  let targetYear = y
+  let targetMonth = d >= 21 ? m + 1 : m
+
+  if (targetMonth > 12) {
+      targetMonth = 1
+      targetYear += 1
+  }
+
+  const month = String(targetMonth).padStart(2, '0')
+  return `${targetYear}/${month}`
 })
 
 const monthHolidayCnt = ref(9)
@@ -165,23 +195,22 @@ const handleSave = () => {
     return
   }
   // 確認ダイアログ表示
-  ElMessageBox.confirm(
-    '選択した日程を希望休として登録します。よろしいですか？',
-    '確認',
-    {
-      confirmButtonText: '確認',
-      cancelButtonText: 'キャンセル',
-      type: 'info'
-    }
-  ).then(() => {
-    // 確認押下：保存処理実行
-    initDefaultDays.value = [...selectDays.value]
-    console.log('保存確定日付', selectDays.value)
-    ElMessage.success('希望休設定は登録完了しました。')
-  }).catch(() => {
-    // キャンセル押下：何もしない
-    ElMessage.info('登録をキャンセルしました')
+  ElMessageBox.confirm('選択した日程を希望休として登録します。よろしいですか？', '確認', {
+    confirmButtonText: '確認',
+    cancelButtonText: 'キャンセル',
+    type: 'info',
+    customClass: 'my-top-msg-box',
   })
+    .then(() => {
+      // 確認押下：保存処理実行
+      initDefaultDays.value = [...selectDays.value]
+      console.log('保存確定日付', selectDays.value)
+      ElMessage.success('希望休設定は登録完了しました。')
+    })
+    .catch(() => {
+      // キャンセル押下：何もしない
+      ElMessage.info('登録をキャンセルしました')
+    })
 }
 
 // キャンセル：手動変更破棄、初期DB状態に戻す
@@ -211,9 +240,20 @@ const handleCancel = () => {
   margin-bottom: 10px;
 }
 
+.now-date{
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
 .sel-text {
   margin-left: 20px;
   color: #f56c6c;
+}
+
+.hol-text{
+  display: flex;
+  align-items: flex-end;
 }
 
 .row-btn {
@@ -277,5 +317,17 @@ const handleCancel = () => {
 
 .calendar-table td.selected {
   background: #e6f7ff;
+}
+
+/* :deep(.el-message-box) {
+  top: 100px !important;
+} */
+</style>
+<style lang="scss">
+.my-top-msg-box {
+  position: fixed !important;
+  top: 30% !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
 }
 </style>

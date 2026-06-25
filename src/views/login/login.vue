@@ -16,7 +16,7 @@
 
         <el-form-item label-width="0">
           <div style="width: 100%; display: flex; justify-content: center">
-            <el-button type="primary" class="login-btn" :loading="loading" @click="handleLogin">
+            <el-button type="primary" class="login-btn" :loading="loading" :disabled="!loginForm.staffId || !loginForm.password" @click="handleLogin">
               ログイン
             </el-button>
           </div>
@@ -138,6 +138,8 @@ const handleLogin = async () => {
       role: 'NORMAL_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/mobile'],
+      subMenus: ['menu', 'leave', 'shift', 'pwd'],
     };
   } else if (loginForm.staffId === 'shop') {
     staffInfo.value = {
@@ -148,6 +150,8 @@ const handleLogin = async () => {
       role: 'SHOP_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/shift', '/system', '/master'],
+      subMenus: ['/shift/shiftSet', '/shift/shiftTypes', '/shift/requestLeave', '/system/passwordEdit', '/system/passwordReset', '/master/staff'],
     };
   } else if (loginForm.staffId === 'shopssq') {
     staffInfo.value = {
@@ -158,6 +162,8 @@ const handleLogin = async () => {
       role: 'SHOP_USER',
       businessType: '03',
       storeCd: '12',
+      menus: ['/shift', '/system', '/master'],
+      subMenus: ['/shift/shiftSet', '/shift/shiftTypes', '/shift/requestLeave', '/system/passwordEdit', '/system/passwordReset', '/master/staff'],
     };
   } else if (loginForm.staffId === 'subshop') {
     staffInfo.value = {
@@ -168,6 +174,8 @@ const handleLogin = async () => {
       role: 'SUB_SHOP_USER',
       businessType: '',
       storeCd: '12',
+      menus: ['/shift', '/system', '/master'],
+      subMenus: ['/shift/shiftSet', '/shift/shiftTypes', '/shift/requestLeave', '/system/passwordEdit', '/master/staff'],
     };
   } else if (loginForm.staffId === 'group') {
     staffInfo.value = {
@@ -178,6 +186,8 @@ const handleLogin = async () => {
       role: 'GROUP_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/shift', '/system', '/master'],
+      subMenus: ['/shift/shiftSet', '/shift/shiftView', '/system/passwordEdit', '/system/passwordReset', '/master/staff'],
     };
   } else if (loginForm.staffId === 'block') {
     staffInfo.value = {
@@ -188,6 +198,8 @@ const handleLogin = async () => {
       role: 'BLOCK_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/shift', '/system'],
+      subMenus: ['/shift/shiftView', '/system/passwordEdit'],
     };
   } else if (loginForm.staffId === 'system') {
     staffInfo.value = {
@@ -198,6 +210,8 @@ const handleLogin = async () => {
       role: 'SYSTEM_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/shift', '/system', '/master'],
+      subMenus: ['/shift/shiftView', '/system/passwordEdit', '/system/passwordReset', '/system/holidaySet', '/master/shiftType', '/master/staff', '/master/shop'],
     };
   } else if (loginForm.staffId === 'jinji') {
     staffInfo.value = {
@@ -208,6 +222,8 @@ const handleLogin = async () => {
       role: 'JINJI_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/shift', '/system', '/master'],
+      subMenus: ['/shift/shiftView', '/system/passwordEdit', '/system/passwordReset', '/system/holidaySet', '/master/shiftType', '/master/staff', '/master/shop'],
     };
   } else if (loginForm.staffId === 'kansa') {
     staffInfo.value = {
@@ -218,6 +234,8 @@ const handleLogin = async () => {
       role: 'KANSA_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/shift', '/system'],
+      subMenus: ['/shift/shiftView', '/system/passwordEdit'],
     };
   } else {
     staffInfo.value = {
@@ -228,6 +246,8 @@ const handleLogin = async () => {
       role: 'NORMAL_USER',
       businessType: '',
       storeCd: '11',
+      menus: ['/mobile'],
+      subMenus: ['menu', 'leave', 'shift', 'pwd'],
     };
   }
 

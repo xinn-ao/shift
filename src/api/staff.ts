@@ -8,6 +8,8 @@ export interface StaffVo {
   role: string
   businessType: string | null
   storeCd: string | null
+  menus: string[]
+  subMenus: string[]
 }
 
 export interface StaffQueryVo {
