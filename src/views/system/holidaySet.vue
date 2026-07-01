@@ -126,7 +126,7 @@ const loadData = () => {
   }
   const arr: TableItem[] = []
   for (let m = 1; m <= 12; m++) {
-    const isPass = search.year === currentYear && m < currentMonth
+    const isPass = search.year === currentYear && m <= currentMonth
     arr.push({
       month: m,
       holidayCnt: Math.floor(Math.random() * 5),

@@ -534,6 +534,27 @@
         </div>
       </template>
     </el-dialog>
+    <!-- 会議区分選択弹窗 -->
+    <el-dialog v-model="meetingModalVisible" title="区分選択" width="400">
+      <el-form label-width="80px">
+        <el-form-item label="区分">
+          <el-select v-model="selectedMeetingCode" placeholder="区分を選択してください" style="width: 80%">
+            <el-option
+              v-for="item in meetingTypeList"
+              :key="item.code"
+              :label="item.name"
+              :value="item.code"
+            />
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <div class="dialog-footer">
+          <el-button @click="meetingModalVisible = false">キャンセル</el-button>
+          <el-button type="primary" @click="selectMeetingType(selectedMeetingCode)">確認</el-button>
+        </div>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -673,7 +694,13 @@ const rightAssignShift = (empIdx: number, date: string, flag: string | number) =
     supportModalVisible.value = true
     return
   }
-
+  // ========== 追加：右クリック時会議区分弹出 ==========
+  if (currentSelectDragItem.kinmuCd === '04') {
+    meetingDropInfo = { empIdx, date, flag }
+    dragCurrent = currentSelectDragItem
+    meetingModalVisible.value = true
+    return
+  }
   // 赋值排班样式与文字
   targetEmp.colorMap[date] = currentSelectDragItem.bg
   targetEmp.cellText[date] = currentSelectDragItem.text ?? ''
@@ -1544,6 +1571,39 @@ const onGlobalDrop = () => {
   cellDragInfo = null
 }
 
+// 会議区分の選択用リスト値
+const meetingTypeList = ref([
+  { code: 'meeting', name: '会議' },
+  { code: 'training', name: '研修' },
+  { code: 'businessTrip', name: '出張' },
+  { code: 'other', name: '他' },
+])
+
+// 会議区分ポップアップ表示フラグ
+const meetingModalVisible = ref(false)
+// 一時保存：ドロップ先情報
+let meetingDropInfo: { empIdx: number; date: string; flag: string | number } | null = null
+// 選択した会議区分コード
+const selectedMeetingCode = ref('')
+// 会議区分選択確定
+const selectMeetingType = (code: string) => {
+  if (!meetingDropInfo || !dragCurrent) return
+  const { empIdx, date, flag } = meetingDropInfo
+  let targetEmp!: EmpItem
+  if (flag === 'single') {
+    targetEmp = singleShop.value.empList[empIdx]!
+  }
+  // 選択した名称を画面に表示
+  const findItem = meetingTypeList.value.find(m => m.code === code)
+  const showText = findItem?.name ?? '会議'
+  targetEmp.colorMap[date] = dragCurrent.bg
+  targetEmp.cellText[date] = showText
+
+  meetingModalVisible.value = false
+  meetingDropInfo = null
+  // ElMessage.success('会議区分選択完了')
+}
+
 // 格子放下
 const handleDrop = (e: DragEvent, empIdx: number, date: string, flag: string | number) => {
   e.preventDefault()
@@ -1557,6 +1617,12 @@ const handleDrop = (e: DragEvent, empIdx: number, date: string, flag: string | n
   if (dragCurrent.kinmuCd === '03') {
     dropTargetInfo = { empIdx, date, flag }
     supportModalVisible.value = true
+    return
+  }
+  //会議→タイプ選択
+  if (dragCurrent.kinmuCd === '04') {
+    meetingDropInfo = { empIdx, date, flag }
+    meetingModalVisible.value = true
     return
   }
   // 普通区分：覆蓋原有希

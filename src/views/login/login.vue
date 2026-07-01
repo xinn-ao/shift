@@ -187,7 +187,7 @@ const handleLogin = async () => {
       businessType: '',
       storeCd: '11',
       menus: ['/shift', '/system', '/master'],
-      subMenus: ['/shift/shiftSet', '/shift/shiftView', '/system/passwordEdit', '/system/passwordReset', '/master/staff'],
+      subMenus: ['/shift/shiftSet', '/shift/shiftView', '/shift/requestLeave', '/system/passwordEdit', '/system/passwordReset', '/master/staff'],
     };
   } else if (loginForm.staffId === 'block') {
     staffInfo.value = {

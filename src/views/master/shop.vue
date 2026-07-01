@@ -8,7 +8,7 @@
       <!-- 1行目：左右分離レイアウト -->
       <div class="search-line">
         <!-- 左側：店番入力 + 検索ボタン -->
-        <el-form inline label-width="55px">
+        <el-form inline label-width="55px" @submit.native.prevent>
           <el-form-item label="店番">
             <el-input
               v-model="search.shopCode"

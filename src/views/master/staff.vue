@@ -10,6 +10,7 @@
         inline
         label-width="55px"
         v-if="['JINJI_USER', 'SYSTEM_USER'].includes(userStore.role)"
+        @submit.native.prevent
       >
         <el-form-item label="店番">
           <el-input
