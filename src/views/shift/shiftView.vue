@@ -20,12 +20,12 @@
       <!-- 下拉框 -->
       <div
         class="group-select"
-        style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px"
+        style="margin-bottom: 15px; display: flex; align-items: center; gap: 30px"
         v-if="userRole === 'BLOCK_USER'"
       >
         <span>グループ：</span>
         <el-select v-model="selectedGroup" placeholder="グループ選択" style="width: 220px">
-          <el-option label="グループ一覧" value="all" />
+          <el-option label="グループ選択" value="" />
           <el-option
             v-for="item in groupList"
             :key="item.groupId"
@@ -33,6 +33,7 @@
             :value="item.groupId"
           />
         </el-select>
+        <el-button type="primary" @click="searchGroupData">検索</el-button>
       </div>
 
       <!-- JINJI/SYSTEM/KANSA三类角色：店番搜索栏 -->
@@ -55,7 +56,7 @@
       <!-- 年月切换 -->
       <div
         class="month-picker"
-        style="display: flex; align-items: center; gap: 12px"
+        style="display: flex; align-items: center; gap: 10px"
         v-if="userRole !== 'NORMAL_USER'"
       >
         <span style="width: calc(100px); text-align: left">指定年月：</span>
@@ -921,12 +922,18 @@ const calendarRows = computed(() => {
 })
 
 // ドロップダウン選択値：初期＝ログイン者担当グループ
-const selectedGroup = ref('all')
+const selectedGroup = ref('')
+const searchGroupId = ref('')
+const hasSearched = ref(false)
+
+const searchGroupData = () => {
+  searchGroupId.value = selectedGroup.value
+  hasSearched.value = true
+}
 
 // ==========描画用グループ配列（選択内容によりソート・フィルタ）==========
 const currentStaff = ref<any>(null)
 const renderGroupList = computed(() => {
-  const sel = selectedGroup.value
   const allGroup = [...groupList.value]
   // 按角色分支处理
   // NORMAL_USER：只筛选本人所属员工データ、全画面自身シフトのみ
@@ -950,25 +957,29 @@ const renderGroupList = computed(() => {
   // }
   // BLOCK_USER
   if (userRole.value === 'BLOCK_USER') {
-    // 1. 复制所有分组
+    // 复制所有分组
     let allGroups = [...allGroup]
 
-    // 2. 分组按 groupId 升序排序
+    // 分组按 groupId 升序排序
     allGroups = allGroups.sort((a, b) => Number(a.groupId) - Number(b.groupId))
 
-    // 3. 每个分组内的店铺按 shopId 升序排序
+    // 每个分组内的店铺按 shopId 升序排序
     const sortedGroups = allGroups.map((group) => {
       const sortedShops = [...group.shopList].sort((a, b) => Number(a.shopId) - Number(b.shopId))
       return { ...group, shopList: sortedShops }
     })
 
-    // 4. 如果选择了【单个分组】，则只返回该分组
-    if (sel !== 'all') {
-      return sortedGroups.filter((g) => g.groupId === sel)
+    if (!hasSearched.value) {
+      return []
     }
 
-    // 5. 默认（グループ一覧）：返回全部排序后的分组
-    return sortedGroups
+    // 如果选择了【单个分组】，则只返回该分组
+    const sel = searchGroupId.value
+    if (sel) {
+      return sortedGroups.filter((g) => g.groupId === sel)
+    } else {
+      return sortedGroups
+    }
   }
 
   // GROUP_USER

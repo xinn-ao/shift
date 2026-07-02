@@ -39,19 +39,19 @@
     <el-table :data="tableData" border style="width: 100%; margin-top: 10px">
       <el-table-column label="区分ID" width="90" align="center">
         <template #default="{ row }">
-          <el-input v-if="row.isNew" v-model="row.id" size="small" />
+          <el-input v-if="row.isNew && (row.type == '01')" v-model="row.id" size="small" />
           <span v-else>{{ row.id }}</span>
         </template>
       </el-table-column>
       <el-table-column label="区分名" align="center">
         <template #default="{ row }">
-          <el-input v-if="isEditMode || row.isNew" v-model="row.name" size="small" />
+          <el-input v-if="(isEditMode || row.isNew) && (row.type == '01')" v-model="row.name" size="small" />
           <span v-else>{{ row.name }}</span>
         </template>
       </el-table-column>
       <el-table-column label="区分タイプ" width="120" align="center">
         <template #default="{ row }">
-          <el-select
+          <!-- <el-select
             v-if="isEditMode || row.isNew"
             v-model="row.type"
             size="small"
@@ -65,8 +65,8 @@
               :label="opt.label"
               :value="opt.value"
             />
-          </el-select>
-          <span v-else>{{ getTypeName(row.type) }}</span>
+          </el-select> -->
+          <span>{{ getTypeName(row.type) }}</span>
         </template>
       </el-table-column>
 
@@ -116,14 +116,14 @@
 
       <el-table-column label="説明" align="center">
         <template #default="{ row }">
-          <el-input v-if="isEditMode || row.isNew" v-model="row.desc" size="small" />
+          <el-input v-if="(isEditMode || row.isNew) && (row.type == '01')" v-model="row.desc" size="small" />
           <span v-else>{{ row.desc }}</span>
         </template>
       </el-table-column>
       <el-table-column label="順番" width="80" align="center">
         <template #default="{ row }">
           <el-input
-            v-if="isEditMode || row.isNew"
+            v-if="(isEditMode || row.isNew) && (row.type == '01')"
             v-model.number="row.sort"
             size="small"
             type="number"
@@ -316,7 +316,7 @@ const handleAdd = () => {
     tempId: addSeq++,
     id: '',
     name: '',
-    type: '',
+    type: '01',
     desc: '',
     sort: 0,
     useFlag: false,
