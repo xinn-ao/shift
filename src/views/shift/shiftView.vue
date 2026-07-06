@@ -13,58 +13,63 @@
 
     <!-- 上部グループ+年月（グループ上段、年月下段） -->
     <div
-      class="top-bar"
-      style="margin-bottom: 20px; background-color: #fff; padding: 20px 30px 20px 30px"
+  class="top-bar"
+  style="margin-bottom: 20px; background-color: #fff; padding: 20px 30px"
+  v-if="userRole !== 'NORMAL_USER'"
+>
+  <div style="display: flex; flex-direction: column; gap: 15px;">
+    <!-- BLOCK_USER グループ検索行 -->
+    <div
+      class="group-select"
+      style="display: flex; align-items: center; gap: 12px"
+      v-if="userRole === 'BLOCK_USER'"
+    >
+      <span style="width: 100px; text-align: left;">グループ：</span>
+      <el-select v-model="selectedGroup" placeholder="グループ選択" style="width: 220px">
+        <el-option label="グループ選択" value="" />
+        <el-option
+          v-for="item in groupList"
+          :key="item.groupId"
+          :label="`${item.groupId} ${item.groupName}`"
+          :value="item.groupId"
+        />
+      </el-select>
+      <el-button type="primary" @click="searchGroupData">検索</el-button>
+    </div>
+
+    <!-- 店番検索行（全管理角色显示） -->
+    <div class="search-shop-bar" style="display: flex; align-items: center; gap: 12px">
+      <span style="width: 100px; text-align: left;">店番</span>
+      <el-input
+        v-model="searchShopId"
+        placeholder="店番を入力"
+        style="flex: 1; max-width: 220px"
+      ></el-input>
+      <el-button type="primary" @click="searchShop" :disabled="!searchShopId">検索</el-button>
+    </div>
+
+    <!-- 年月切换 -->
+    <div
+      class="month-picker"
+      style="display: flex; align-items: center; gap: 10px"
       v-if="userRole !== 'NORMAL_USER'"
     >
-      <!-- 下拉框 -->
-      <div
-        class="group-select"
-        style="margin-bottom: 15px; display: flex; align-items: center; gap: 30px"
-        v-if="userRole === 'BLOCK_USER'"
-      >
-        <span>グループ：</span>
-        <el-select v-model="selectedGroup" placeholder="グループ選択" style="width: 220px">
-          <el-option label="グループ選択" value="" />
-          <el-option
-            v-for="item in groupList"
-            :key="item.groupId"
-            :label="`${item.groupId} ${item.groupName}`"
-            :value="item.groupId"
-          />
-        </el-select>
-        <el-button type="primary" @click="searchGroupData">検索</el-button>
-      </div>
-
-      <!-- JINJI/SYSTEM/KANSA三类角色：店番搜索栏 -->
-      <div
-        class="search-shop-bar"
-        v-if="['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole)"
-        style="margin-bottom: 15px"
-      >
-        <div style="display: flex; align-items: center; gap: 12px">
-          <span style="width: calc(100px); text-align: left">店番</span>
-          <el-input
-            v-model="searchShopId"
-            placeholder="店番を入力"
-            style="flex: 1; max-width: 320px"
-          ></el-input>
-          <el-button type="primary" @click="searchShop" :disabled="!searchShopId">検索</el-button>
-        </div>
-      </div>
-
-      <!-- 年月切换 -->
-      <div
-        class="month-picker"
-        style="display: flex; align-items: center; gap: 10px"
-        v-if="userRole !== 'NORMAL_USER'"
-      >
-        <span style="width: calc(100px); text-align: left">指定年月：</span>
-        <el-button icon="ArrowLeft" @click="prevMonth"></el-button>
-        <span>{{ targetYear }}年{{ targetMonth }}月</span>
-        <el-button icon="ArrowRight" @click="nextMonth"></el-button>
+      <span style="width: 100px; text-align: left">指定年月：</span>
+      <el-button icon="ArrowLeft" @click="prevMonth"></el-button>
+      <span>{{ targetYear }}年{{ targetMonth }}月</span>
+      <el-button icon="ArrowRight" @click="nextMonth"></el-button>
+      <!-- ========== 追加：右侧イベント切替ボタン ========== -->
+      <div style="margin-left: auto; display: flex; gap: 10px">
+        <el-button size="small" type="primary" v-if="!showEventList && renderGroupList.length > 0" @click="showEventList = true">
+          イベント表示
+        </el-button>
+        <el-button size="small" type="primary" v-if="showEventList && renderGroupList.length > 0" @click="showEventList = false">
+          イベント非表示
+        </el-button>
       </div>
     </div>
+  </div>
+</div>
 
     <div
       v-for="groupItem in renderGroupList"
@@ -113,9 +118,9 @@
     </div> -->
 
       <div>
+        <template v-for="shop in groupItem.shopList" :key="shop.shopId">
         <table class="shift-table" border="1" cellpadding="2" cellspacing="0" width="100%">
           <!-- 店铺循环：一个店铺占用【标题行+字段头行+N行员工行】 -->
-          <template v-for="shop in groupItem.shopList" :key="shop.shopId">
             <!-- 第1行：店铺标题 + 月份分栏（店铺标题合并前4列×3行） -->
             <tr>
               <th colspan="4" rowspan="3" class="title-th">
@@ -136,7 +141,7 @@
                 class="day-head"
                 :style="{
                   color:
-                    dayItem.week === '日' ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
+                    (dayItem.week === '日' || dayItem.isHoliday) ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
                 }"
               >
                 {{ dayItem.day }}
@@ -150,7 +155,7 @@
                 class="week-head"
                 :style="{
                   color:
-                    dayItem.week === '日' ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
+                    (dayItem.week === '日' || dayItem.isHoliday) ? '#f00' : dayItem.week === '土' ? '#0066ff' : '#333',
                 }"
               >
                 {{ dayItem.week }}
@@ -185,8 +190,65 @@
                 </span>
               </td>
             </tr>
-          </template>
-        </table>
+          </table>
+          <!-- 当月特殊説明イベント一覧 -->
+    <el-card shadow="hover" style="margin: 20px 0" class="print-area" v-if="showEventList">
+      <div style="display: flex; justify-content: center; align-items: center; position: relative">
+        <!-- 标题 -->
+        <div class="event-title">{{ targetMonth}}月主要イベント一覧</div>
+      </div>
+
+      <div class="event-wrap print-area">
+        <!-- 左欄 表格 -->
+        <div class="event-col">
+          <table class="event-table">
+            <thead>
+              <tr>
+                <th class="th-no">項</th>
+                <th class="th-day">日付</th>
+                <th class="th-content">イベント内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, idx) in shop.eventList.filter((_, idx) => idx % 2 === 0)"
+                :key="item.eventId"
+                :class="idx % 2 === 0 ? 'odd' : 'even'"
+              >
+                <td>{{ item.no }}</td>
+                <td width="20%">{{ item.eventDate }}</td>
+                <td>{{ item.eventContent }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 右欄 表格 -->
+        <div class="event-col print-area">
+          <table class="event-table">
+            <thead>
+              <tr>
+                <th class="th-no">項</th>
+                <th class="th-day">日付</th>
+                <th class="th-content">イベント内容</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(item, idx) in shop.eventList.filter((_, idx) => idx % 2 === 1)"
+                :key="item.eventId"
+                :class="idx % 2 === 0 ? 'odd' : 'even'"
+              >
+                <td>{{ item.no }}</td>
+                <td width="20%">{{ item.eventDate }}</td>
+                <td>{{ item.eventContent }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </el-card>
+        </template>
       </div>
     </div>
   </div>
@@ -197,10 +259,12 @@ import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 import { useUserStore } from '@/stores/user'
 import { ElMessage } from 'element-plus'
+import { isHoliday } from 'jp-holidays'
 
 // 获取登录角色
 const userStore = useUserStore()
 const userRole = computed(() => userStore.role)
+const showEventList = ref(true)
 
 // ==========固定数据，限制显示用==========
 const loginGroupId = ref('126')
@@ -216,9 +280,12 @@ const searchShopId = ref('')
 const targetSearchShopId = ref('')
 // 店铺搜索触发
 const searchShop = () => {
+  selectedGroup.value = ''
+  searchGroupFlag.value = false
+  searchShopFlag.value = true
   targetSearchShopId.value = searchShopId.value.trim()
   // ロール判定：人事/システム/監査ユーザーのみ店番検索対象
-  if (!['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole.value)) return
+  // if (!['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole.value)) return
 
   // 店番空文字チェック
   if (!targetSearchShopId.value) {
@@ -254,9 +321,17 @@ type StaffShift = {
   setDay: string | number
   shiftMap: Record<string, Record<string, Record<number, string>>>
 }
+
+type EventInfo = {
+  no: number
+  eventId: string
+  eventDate: string
+  eventContent: string
+}
 type ShopItem = {
   shopId: string
   shopName: string
+  eventList: EventInfo[]
   staffList: StaffShift[]
 }
 type GroupItem = {
@@ -274,6 +349,10 @@ groupList.value = [
       {
         shopId: '11',
         shopName: '福山本店',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-07-05', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-07-18', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u1',
@@ -478,6 +557,10 @@ groupList.value = [
       {
         shopId: '13',
         shopName: 'AO+',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-06-28', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-07-08', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u7',
@@ -508,6 +591,10 @@ groupList.value = [
       {
         shopId: '12',
         shopName: '瑞江スタジオ',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-06-21', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-06-25', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u10',
@@ -528,6 +615,10 @@ groupList.value = [
       {
         shopId: '21',
         shopName: '福山本店',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-07-13', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-07-14', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u11',
@@ -574,6 +665,10 @@ groupList.value = [
       {
         shopId: '22',
         shopName: 'AO+',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-07-09', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-07-18', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u71',
@@ -604,6 +699,10 @@ groupList.value = [
       {
         shopId: '23',
         shopName: '瑞江スタジオ',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-07-12', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-07-20', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u101',
@@ -624,6 +723,10 @@ groupList.value = [
       {
         shopId: '31',
         shopName: '福山本店',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-06-25', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-06-30', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u111',
@@ -670,6 +773,10 @@ groupList.value = [
       {
         shopId: '32',
         shopName: 'AO+',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-06-26', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-07-16', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u711',
@@ -700,6 +807,10 @@ groupList.value = [
       {
         shopId: '33',
         shopName: '瑞江スタジオ',
+        eventList: [
+          { no:1, eventId: 'e001', eventDate: '2026-06-24', eventContent: '新店キャンペーン'},
+          { no:2,eventId: 'e002', eventDate: '2026-06-30', eventContent: '棚卸し作業'}
+        ],
         staffList: [
           {
             staffId: 'u1011',
@@ -851,7 +962,7 @@ allShiftTypes.forEach((item) => {
 
 // ==========日付生成：21日～翌月20日 日付・曜日配列==========
 const dateList = computed(() => {
-  const arr: Array<{ day: number; week: string }> = []
+  const arr: Array<{ day: number; week: string, isHoliday: boolean }> = []
   // targetYear/targetMonth = 【本月】
   const curMonthBase = dayjs(`${targetYear.value}-${targetMonth.value}-01`)
   // 上月基准（用来取上月21号）
@@ -866,7 +977,8 @@ const dateList = computed(() => {
   // ① 上月21日 ~ 上月末日
   for (let d = 21; d <= prevMonthLastDay; d++) {
     const cur = dayjs(`${prevY}-${prevM}-${d}`)
-    arr.push({ day: d, week: weekArr[cur.day()]! })
+    const isHolidayFlag = isHoliday(cur.toDate()) 
+    arr.push({ day: d, week: weekArr[cur.day()]!, isHoliday: isHolidayFlag })
   }
 
   // ② 本月1日 ~ 本月20日
@@ -874,7 +986,8 @@ const dateList = computed(() => {
   const currM = curMonthBase.month() + 1
   for (let d = 1; d <= 20; d++) {
     const cur = dayjs(`${currY}-${currM}-${d}`)
-    arr.push({ day: d, week: weekArr[cur.day()]! })
+    const isHolidayFlag = isHoliday(cur.toDate()) 
+    arr.push({ day: d, week: weekArr[cur.day()]!, isHoliday: isHolidayFlag })
   }
 
   return arr
@@ -925,10 +1038,14 @@ const calendarRows = computed(() => {
 const selectedGroup = ref('')
 const searchGroupId = ref('')
 const hasSearched = ref(false)
-
+const searchGroupFlag = ref(false)
+const searchShopFlag = ref(false)
 const searchGroupData = () => {
   searchGroupId.value = selectedGroup.value
   hasSearched.value = true
+  searchGroupFlag.value = true
+  searchShopFlag.value = false
+  searchShopId.value = ''
 }
 
 // ==========描画用グループ配列（選択内容によりソート・フィルタ）==========
@@ -956,7 +1073,7 @@ const renderGroupList = computed(() => {
   //   return filterGroup
   // }
   // BLOCK_USER
-  if (userRole.value === 'BLOCK_USER') {
+  if (userRole.value === 'BLOCK_USER' && searchGroupFlag.value) {
     // 复制所有分组
     let allGroups = [...allGroup]
 
@@ -1014,7 +1131,7 @@ const renderGroupList = computed(() => {
   }
 
   // JINJI/SYSTEM/KANSA
-  if (['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole.value)) {
+  // if (['JINJI_USER', 'SYSTEM_USER', 'KANSA_USER'].includes(userRole.value)) {
     // 未输入搜索 → 返回空数组，页面无任何店铺
     if (!targetSearchShopId.value) return []
     // 遍历全部分组，筛选出匹配店铺ID的店铺，只保留该店铺所属分组+单店铺
@@ -1030,10 +1147,10 @@ const renderGroupList = computed(() => {
       }
     })
     return result
-  }
+  // }
 
   // 兜底：默认返回空数组（避免角色值异常）
-  return []
+  // return []
 })
 
 // ==========年月切替メソッド==========
@@ -1249,4 +1366,74 @@ const getShiftBg = (code: string) => {
 .normal-cal-wrap .shift-table td:nth-child(7) {
   color: #06f;
 }
+
+.event-title {
+  width: 100%;
+  font-size: 24px;
+  text-align: center;
+  padding: 8px 0;
+  background: #fff3d9;
+  margin: -12px 0 0 0;
+  border-radius: 4px 4px 0 0;
+  border: 1px dashed #999;
+  border-bottom: none;
+}
+
+.event-wrap {
+  display: flex;
+  gap: 100px;
+  /* 左右カラム隙間 */
+  min-height: 60px;
+  overflow-y: auto;
+  margin-top: 0;
+  padding: 0;
+}
+
+.event-col {
+  flex: 1;
+}
+
+.event-table {
+  width: 100%;
+  border-collapse: collapse;
+  border-left: 1px solid #999;
+  border-right: 1px solid #999;
+  border-bottom: 1px solid #999;
+  font-size: 17px;
+}
+
+.event-table th,
+.event-table td {
+  border: 1px solid #999;
+  border-top: 0;
+  padding: 6px 4px;
+  text-align: center;
+}
+
+.event-table thead th {
+  background-color: #e8f1e4;
+  font-weight: normal;
+}
+
+.th-no {
+  width: 36px;
+}
+
+.th-day {
+  width: 65px;
+}
+
+.th-content {
+  flex: 1;
+}
+
+/* 奇偶行背景色 */
+.event-table tr.odd {
+  background-color: #f2f2f2;
+}
+
+.event-table tr.even {
+  background-color: #e1ecf6;
+}
+
 </style>

@@ -355,4 +355,12 @@ const handleCancel = () => {
   justify-content: flex-end;
   gap: 12px;
 }
+
+.btn-group {
+  margin-top: 12px;
+  text-align: right;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
 </style>

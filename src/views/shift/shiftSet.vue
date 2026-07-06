@@ -52,7 +52,7 @@
                 <th
                   v-for="item in dayList"
                   :key="item.date"
-                  :class="[{ sun: item.week === 0, sat: item.week === 6 }]"
+                  :class="[{ sun: (item.week === 0 || item.isHoliday), sat: item.week === 6 }]"
                   class="week-head"
                 >
                   {{ item.weekName }}
@@ -562,6 +562,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { isHoliday } from 'jp-holidays'
 
 // 实例仓库
 const userStore = useUserStore()
@@ -580,6 +581,7 @@ type DayItem = {
   week: number
   weekName: string | undefined
   showYM: string
+  isHoliday: boolean
 }
 type EmpItem = {
   post: string
@@ -1471,6 +1473,7 @@ const makeDayRange = () => {
     const m = curr.getMonth() + 1
     const d = curr.getDate()
     const fullDate = `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`
+    const isHolidayFlag = isHoliday(curr)
     // 表示用年月
     const showYM = `${m}月`
     dayList.value.push({
@@ -1479,6 +1482,7 @@ const makeDayRange = () => {
       week: curr.getDay(),
       weekName: weekArr[curr.getDay()],
       showYM,
+      isHoliday: isHolidayFlag,
     })
     curr.setDate(curr.getDate() + 1)
   }
@@ -1573,10 +1577,10 @@ const onGlobalDrop = () => {
 
 // 会議区分の選択用リスト値
 const meetingTypeList = ref([
-  { code: 'meeting', name: '会議' },
-  { code: 'training', name: '研修' },
-  { code: 'businessTrip', name: '出張' },
-  { code: 'other', name: '他' },
+  { code: '01', name: '会議' },
+  { code: '02', name: '研修' },
+  { code: '03', name: '出張' },
+  { code: '04', name: '他' },
 ])
 
 // 会議区分ポップアップ表示フラグ

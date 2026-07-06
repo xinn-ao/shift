@@ -55,7 +55,12 @@
                 :class="[dayItem.type, { selected: selectDays.includes(dayItem.fullDate) }]"
                 @click="toggleSelect(dayItem)"
               >
-                <span class="day-number">{{ dayItem.day || '' }}</span>
+                <span class="day-num" :style="{
+                                color:
+                                    (dayItem?.type === 'sun' || dayItem?.isHoliday) ? '#f00' : dayItem?.type === 'sat' ? '#0066ff' : '#333',
+                                }">
+                                {{ dayItem?.day ?? '' }}
+                            </span>
               </td>
             </tr>
           </tbody>
@@ -69,6 +74,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/stores/user'
+import { isHoliday } from 'jp-holidays'
 
 // 实例仓库
 const userStore = useUserStore()
@@ -80,6 +86,7 @@ interface DayItem {
   month: number
   day: number
   type: DayType
+  isHoliday: boolean
 }
 
 // 当日 YYYY/MM/DD
@@ -143,7 +150,7 @@ const calendarList = computed(() => {
   const list: DayItem[] = []
   const startWeek = start.getDay()
   for (let i = 0; i < startWeek; i++) {
-    list.push({ fullDate: '', year: 0, month: 0, day: 0, type: 'normal' })
+    list.push({ fullDate: '', year: 0, month: 0, day: 0, type: 'normal',isHoliday: false })
   }
   const curr = new Date(start)
   while (curr <= end) {
@@ -151,12 +158,14 @@ const calendarList = computed(() => {
     const m = curr.getMonth() + 1
     const d = curr.getDate()
     const w = curr.getDay()
+    const isHolidayFlag = isHoliday(curr) 
     list.push({
       fullDate: `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`,
       year: y,
       month: m,
       day: d,
       type: getDayType(w),
+      isHoliday: isHolidayFlag,
     })
     curr.setDate(curr.getDate() + 1)
   }

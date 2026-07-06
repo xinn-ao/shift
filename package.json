@@ -18,6 +18,7 @@
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.16.1",
     "element-plus": "^2.14.0",
+    "jp-holidays": "^1.0.3",
     "pinia": "^3.0.4",
     "sass": "^1.100.0",
     "vue": "^3.6.0-beta.13",

@@ -44,7 +44,12 @@
                             <div class="shift-text" v-if="dayItem">
                                 {{ getCellShiftInfo(currentStaff, currentYm, dayItem.day).finalText }}
                             </div>
-                            <span class="day-num">{{ dayItem?.day ?? '' }}</span>
+                            <span class="day-num" :style="{
+                                color:
+                                    (dayItem?.week === '日' || dayItem?.isHoliday) ? '#f00' : dayItem?.week === '土' ? '#0066ff' : '#333',
+                                }">
+                                {{ dayItem?.day ?? '' }}
+                            </span>
                         </td>
                     </tr>
                 </tbody>
@@ -57,6 +62,7 @@
 import { ref, computed } from 'vue'
 import dayjs from 'dayjs'
 import { useUserStore } from '@/stores/user'
+import { isHoliday } from 'jp-holidays'
 
 const userStore = useUserStore()
 
@@ -170,7 +176,7 @@ const currentYm = computed(() => `${targetYear.value}${String(targetMonth.value)
 
 // 21～翌20日の日付配列
 const dateList = computed(() => {
-    const arr: Array<{ day: number; week: string }> = []
+    const arr: Array<{ day: number; week: string, isHoliday:boolean }> = []
     const curMonthBase = dayjs(`${targetYear.value}-${targetMonth.value}-01`)
     const prevMonth = curMonthBase.subtract(1, 'month')
     const prevY = prevMonth.year()
@@ -179,26 +185,28 @@ const dateList = computed(() => {
     const weekArr = ['日', '月', '火', '水', '木', '金', '土']
     for (let d = 21; d <= prevMonthLastDay; d++) {
         const cur = dayjs(`${prevY}-${prevM}-${d}`)
-        arr.push({ day: d, week: weekArr[cur.day()]! })
+        const isHolidayFlag = isHoliday(cur.toDate()) 
+        arr.push({ day: d, week: weekArr[cur.day()]!, isHoliday: isHolidayFlag })
     }
     const currY = curMonthBase.year()
     const currM = curMonthBase.month() + 1
     for (let d = 1; d <= 20; d++) {
         const cur = dayjs(`${currY}-${currM}-${d}`)
-        arr.push({ day: d, week: weekArr[cur.day()]! })
+        const isHolidayFlag = isHoliday(cur.toDate()) 
+        arr.push({ day: d, week: weekArr[cur.day()]!, isHoliday: isHolidayFlag })
     }
     return arr
 })
 
 // 7日1行カレンダー行列
 const calendarRows = computed(() => {
-    const rows: Array<Array<{ day: number; week: string } | null>> = []
+    const rows: Array<Array<{ day: number; week: string, isHoliday:boolean } | null>> = []
     const list = [...dateList.value]
     if (list.length === 0) return rows
     const weekMap: Record<string, number> = { 日: 0, 月: 1, 火: 2, 水: 3, 木: 4, 金: 5, 土: 6 }
     const firstItem = list[0]!
     const emptyCount = weekMap[firstItem.week] ?? 0
-    let currentRow: Array<{ day: number; week: string } | null> = []
+    let currentRow: Array<{ day: number; week: string, isHoliday:boolean } | null> = []
     for (let i = 0; i < emptyCount; i++) currentRow.push(null)
     list.forEach(item => {
         currentRow.push(item)
